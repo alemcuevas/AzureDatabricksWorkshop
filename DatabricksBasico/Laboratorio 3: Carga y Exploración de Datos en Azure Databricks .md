@@ -1,4 +1,4 @@
-# 🧪 Laboratorio 3: Carga y Exploración de Datos en Azure Databricks
+# 🧪 Laboratorio 3: Carga y Exploración de Datos Energéticos en Azure Databricks
 
 ## 🎯 Objetivo  
 Conectar Azure Databricks a Azure Data Lake Storage Gen2 usando la clave de acceso, cargar el dataset `energy-consumption-by-source.csv`, explorarlo y guardarlo en formato Delta Lake.
@@ -22,7 +22,7 @@ Conectar Azure Databricks a Azure Data Lake Storage Gen2 usando la clave de acce
 
 ### 1. Establecer la clave de acceso en la configuración de Spark
 
-Reemplaza los valores `<storage_account>` y `<access_key>` con los reales:
+Reemplaza `<clave_de_acceso>` con el valor de `key1` obtenido en el portal de Azure:
 
     spark.conf.set(
         "fs.azure.account.key.storageenergydemo.dfs.core.windows.net",
@@ -42,25 +42,44 @@ Reemplaza los valores `<storage_account>` y `<access_key>` con los reales:
 
 ---
 
-### 3. Explorar los datos
+### 3. Verificar el esquema
 
-- Ver el esquema:
+    df.printSchema()
 
-        df.printSchema()
+Deberías ver columnas como:
+- `Country`
+- `Code`
+- `Year`
+- `Coal Consumption - EJ`
+- `Oil Consumption - EJ`
+- `Gas Consumption - EJ`
+- `Nuclear Consumption - EJ`
+- `Hydro Consumption - EJ`
+- `Renewables Consumption - EJ`
+- `Other Renewables Consumption - EJ`
+- `Primary energy consumption (EJ)`
 
-- Mostrar países únicos:
+📸 **Screenshot sugerido:** Salida de `printSchema()` mostrando los tipos
 
-        df.select("Entity").distinct().show(10)
+---
 
-- Filtrar datos por país (ejemplo: México):
+### 4. Filtrar y explorar los datos
 
-        df.filter(df.Entity == "Mexico").display()
+Mostrar los países únicos:
+
+    df.select("Country").distinct().show(10)
+
+Ver los datos de México:
+
+    df.filter(df["Country"] == "Mexico").display()
 
 📸 **Screenshot sugerido:** Resultados del filtro por país
 
 ---
 
-### 4. Guardar los datos en formato Delta
+### 5. Guardar los datos en formato Delta
+
+Escribe el DataFrame completo como tabla Delta:
 
     df.write.format("delta").mode("overwrite").save("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data")
 
@@ -68,40 +87,40 @@ Reemplaza los valores `<storage_account>` y `<access_key>` con los reales:
 
 ---
 
-### 5. Leer los datos desde Delta Lake
+### 6. Leer los datos desde Delta Lake
 
     df_delta = spark.read.format("delta").load("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data")
     display(df_delta)
 
-📸 **Screenshot sugerido:** Vista de los datos cargados en formato Delta
+📸 **Screenshot sugerido:** Vista de los datos cargados desde Delta
 
 ---
 
-### 6. Ejecutar una consulta SQL
+### 7. Consultar los datos con SQL
 
-1. Registrar una vista temporal:
+1. Registrar el DataFrame como vista temporal:
 
         df_delta.createOrReplaceTempView("energia")
 
-2. Ejecutar la siguiente consulta para ver los 10 países con mayor consumo energético en 2020:
+2. Consulta: países con mayor consumo de energía en 2020
 
         %sql
-        SELECT Entity, Year, `Primary energy consumption`
+        SELECT Country, Year, `Primary energy consumption (EJ)`
         FROM energia
         WHERE Year = 2020
-        ORDER BY `Primary energy consumption` DESC
+        ORDER BY `Primary energy consumption (EJ)` DESC
         LIMIT 10
 
-📸 **Screenshot sugerido:** Tabla con resultados ordenados
+📸 **Screenshot sugerido:** Tabla ordenada con los países de mayor consumo
 
 ---
 
 ## 🧠 Conceptos clave aplicados
 
 - Conexión directa a ADLS Gen2 vía `spark.conf.set`  
-- Lectura y visualización de archivos CSV en Databricks  
-- Almacenamiento optimizado con Delta Lake  
-- Análisis exploratorio con SQL sobre Spark
+- Lectura y visualización de archivos CSV con columnas reales del dataset  
+- Escritura optimizada en formato Delta Lake  
+- Consulta de datos energéticos con Spark SQL
 
 ---
 
@@ -109,7 +128,7 @@ Reemplaza los valores `<storage_account>` y `<access_key>` con los reales:
 
 - [Leer datos desde Azure Data Lake Gen2](https://learn.microsoft.com/azure/databricks/data/data-sources/azure/azure-datalake-gen2)  
 - [Documentación oficial de Delta Lake](https://learn.microsoft.com/azure/databricks/delta/)  
-- [Conexiones seguras con claves](https://learn.microsoft.com/azure/databricks/data/data-sources/azure/azure-storage#--access-using-an-account-key)  
-- [Consultas SQL en Databricks](https://learn.microsoft.com/azure/databricks/sql/)
+- [Consultas SQL en Databricks](https://learn.microsoft.com/azure/databricks/sql/)  
+- [Funciones de Spark SQL](https://spark.apache.org/docs/latest/api/sql/index.html)
 
-💡 **Consejo:** Usa esta opción solo en entornos de desarrollo. Para producción, se recomienda usar **Azure Key Vault** o **Managed Identity** para mayor seguridad.
+💡 **Consejo:** Siempre inspecciona el esquema y los nombres de columnas al cargar datasets CSV. El encabezado original puede contener espacios, símbolos o unidades.
