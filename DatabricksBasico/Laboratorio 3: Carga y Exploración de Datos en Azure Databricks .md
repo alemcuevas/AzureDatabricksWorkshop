@@ -1,7 +1,7 @@
 # 🧪 Laboratorio 3: Carga y Exploración de Datos en Azure Databricks
 
 ## 🎯 Objetivo  
-Conectar Databricks a un almacenamiento de Azure (ADLS o Blob), cargar datos en un DataFrame de Spark, y realizar lectura/escritura en formato Delta Lake.
+Conectar Azure Databricks a Azure Data Lake Storage Gen2 usando la clave de acceso, cargar el dataset `energy-consumption-by-source.csv`, explorarlo y guardarlo en formato Delta Lake.
 
 ---
 
@@ -11,101 +11,105 @@ Conectar Databricks a un almacenamiento de Azure (ADLS o Blob), cargar datos en 
 ---
 
 ## ✅ Prerrequisitos  
-- Tener acceso a un Workspace de Azure Databricks  
-- Tener un clúster en estado **Running**  
-- Tener acceso a una cuenta de almacenamiento (ADLS Gen2 o Blob)  
-- Haber configurado permisos (con *access key*, *SAS token*, o *OAuth via managed identity*)
+- Workspace de Azure Databricks activo  
+- Clúster en estado **Running**  
+- Archivo `energy-consumption-by-source.csv` subido al contenedor `energia` del Storage Account `storageenergydemo`  
+- Clave de acceso disponible desde el portal de Azure
 
 ---
 
 ## 📝 Pasos
 
-### 1. Montar el almacenamiento (opcional)
+### 1. Establecer la clave de acceso en la configuración de Spark
 
-Si deseas montar un contenedor de almacenamiento en Databricks para facilitar el acceso, usa el siguiente formato:
+Reemplaza los valores `<storage_account>` y `<access_key>` con los reales:
 
-    dbutils.fs.mount(
-        source = "wasbs://<container>@<account>.blob.core.windows.net/",
-        mount_point = "/mnt/datalake",
-        extra_configs = {
-          "fs.azure.account.key.<account>.blob.core.windows.net": dbutils.secrets.get(scope = "kv_scope", key = "storage-key")
-        }
+    spark.conf.set(
+        "fs.azure.account.key.storageenergydemo.dfs.core.windows.net",
+        "<clave_de_acceso>"
     )
 
-📸 **Screenshot sugerido:** Notebook mostrando el montaje exitoso del contenedor
+📸 **Screenshot sugerido:** Celda con `spark.conf.set` ejecutada sin errores
 
 ---
 
-### 2. Verificar archivos disponibles
+### 2. Cargar el archivo CSV en un DataFrame
 
-Verifica el contenido del contenedor o carpeta usando:
-
-    display(dbutils.fs.ls("/mnt/datalake/datos"))
-
-📸 **Screenshot sugerido:** Resultado de la visualización del contenido de la carpeta montada
-
----
-
-### 3. Cargar un archivo CSV a un DataFrame
-
-Usa `spark.read` para cargar un archivo CSV con encabezado:
-
-    df = spark.read.option("header", True).csv("/mnt/datalake/datos/ventas.csv")
+    df = spark.read.option("header", True).csv("abfss://energia@storageenergydemo.dfs.core.windows.net/energy-consumption-by-source.csv")
     display(df)
 
-📸 **Screenshot sugerido:** Primeras filas del DataFrame mostradas con `display()`
+📸 **Screenshot sugerido:** Primeras filas del DataFrame cargado correctamente
 
 ---
 
-### 4. Escribir datos en formato Delta
+### 3. Explorar los datos
 
-Escribe el DataFrame en formato Delta para habilitar transacciones ACID y consultas eficientes:
+- Ver el esquema:
 
-    df.write.format("delta").mode("overwrite").save("/mnt/datalake/delta/ventas")
+        df.printSchema()
 
-📸 **Screenshot sugerido:** Celda de escritura completada sin errores
+- Mostrar países únicos:
+
+        df.select("Entity").distinct().show(10)
+
+- Filtrar datos por país (ejemplo: México):
+
+        df.filter(df.Entity == "Mexico").display()
+
+📸 **Screenshot sugerido:** Resultados del filtro por país
 
 ---
 
-### 5. Leer datos desde formato Delta
+### 4. Guardar los datos en formato Delta
 
-Vuelve a cargar los datos desde la ruta Delta:
+    df.write.format("delta").mode("overwrite").save("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data")
 
-    df_delta = spark.read.format("delta").load("/mnt/datalake/delta/ventas")
+📸 **Screenshot sugerido:** Confirmación de escritura exitosa
+
+---
+
+### 5. Leer los datos desde Delta Lake
+
+    df_delta = spark.read.format("delta").load("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data")
     display(df_delta)
 
-📸 **Screenshot sugerido:** Resultados cargados desde formato Delta
+📸 **Screenshot sugerido:** Vista de los datos cargados en formato Delta
 
 ---
 
-### 6. Ejecutar una consulta SQL sobre los datos
+### 6. Ejecutar una consulta SQL
 
-Registra temporalmente el DataFrame como vista SQL y consulta desde SQL:
+1. Registrar una vista temporal:
 
-    df_delta.createOrReplaceTempView("ventas")
+        df_delta.createOrReplaceTempView("energia")
 
-    %sql
-    SELECT * FROM ventas WHERE cantidad > 10
+2. Ejecutar la siguiente consulta para ver los 10 países con mayor consumo energético en 2020:
 
-📸 **Screenshot sugerido:** Resultados de la consulta SQL con filtro aplicado
+        %sql
+        SELECT Entity, Year, `Primary energy consumption`
+        FROM energia
+        WHERE Year = 2020
+        ORDER BY `Primary energy consumption` DESC
+        LIMIT 10
+
+📸 **Screenshot sugerido:** Tabla con resultados ordenados
 
 ---
 
 ## 🧠 Conceptos clave aplicados
 
-- **Montaje de almacenamiento**: Conexión segura a ADLS/Blob desde Databricks  
-- **Lectura de CSV**: Carga de datos semiestructurados  
-- **Delta Lake**: Escritura y lectura con formato optimizado  
-- **SQL sobre Spark**: Consultas interactivas para exploración de datos
+- Conexión directa a ADLS Gen2 vía `spark.conf.set`  
+- Lectura y visualización de archivos CSV en Databricks  
+- Almacenamiento optimizado con Delta Lake  
+- Análisis exploratorio con SQL sobre Spark
 
 ---
 
 ## 📚 Recursos Oficiales Recomendados
 
-- [Leer y escribir datos en Databricks](https://learn.microsoft.com/azure/databricks/data/data-sources/)  
-- [Conexión a ADLS Gen2](https://learn.microsoft.com/azure/databricks/data/data-sources/azure/azure-datalake-gen2)  
+- [Leer datos desde Azure Data Lake Gen2](https://learn.microsoft.com/azure/databricks/data/data-sources/azure/azure-datalake-gen2)  
 - [Documentación oficial de Delta Lake](https://learn.microsoft.com/azure/databricks/delta/)  
-- [Usar SQL en notebooks de Databricks](https://learn.microsoft.com/azure/databricks/sql/)
+- [Conexiones seguras con claves](https://learn.microsoft.com/azure/databricks/data/data-sources/azure/azure-storage#--access-using-an-account-key)  
+- [Consultas SQL en Databricks](https://learn.microsoft.com/azure/databricks/sql/)
 
-💡 **Consejo:** Usa Delta Lake siempre que necesites integridad transaccional o consultas rápidas sobre grandes volúmenes de datos
-
+💡 **Consejo:** Usa esta opción solo en entornos de desarrollo. Para producción, se recomienda usar **Azure Key Vault** o **Managed Identity** para mayor seguridad.
