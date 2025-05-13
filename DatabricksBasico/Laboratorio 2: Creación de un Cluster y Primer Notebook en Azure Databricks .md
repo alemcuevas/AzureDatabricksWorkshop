@@ -56,7 +56,10 @@ Configurar un clúster en Azure Databricks, crear un notebook y ejecutar comando
 - Selecciona **Python** como lenguaje  
 - Asocia el notebook al clúster `demo-cluster`
 
-📸 **Screenshot sugerido:** Formulario de creación del notebook con clúster seleccionado
+![image](https://github.com/user-attachments/assets/c528edec-bc62-4c6d-af84-28ac2b9ed971)
+![image](https://github.com/user-attachments/assets/addb3653-0f70-4385-a9d5-2c2592bf672e)
+![image](https://github.com/user-attachments/assets/38e01344-ab1e-4cbe-a30f-2bdae12ac2b9)
+![image](https://github.com/user-attachments/assets/5108e748-3859-4583-8535-a2c55da5d3ba)
 
 ---
 
@@ -68,13 +71,15 @@ Configurar un clúster en Azure Databricks, crear un notebook y ejecutar comando
     y = 7
     x + y
 
+![image](https://github.com/user-attachments/assets/330a1a18-cc77-40c8-9e61-9771e8934f94)
+
 **Ejemplo 2 – Crear un DataFrame y mostrarlo:**
 
     data = [("Ana", 34), ("Luis", 28), ("Carmen", 45)]
     df = spark.createDataFrame(data, ["Nombre", "Edad"])
     df.display()
 
-📸 **Screenshot sugerido:** Celda ejecutada mostrando la tabla con `.display()`
+![image](https://github.com/user-attachments/assets/60bad0e8-3f1f-43fe-9375-cabf40664a63)
 
 ---
 
@@ -82,14 +87,16 @@ Configurar un clúster en Azure Databricks, crear un notebook y ejecutar comando
 - Agrega una nueva celda y cambia el tipo de celda a **SQL** (desde el menú desplegable donde dice Python)  
 - Escribe lo siguiente:
 
+```
     SELECT * FROM VALUES  
       ("Carlos", 30),  
       ("Lucía", 29),  
       ("Pedro", 50)  
     AS personas(nombre, edad)  
     WHERE edad > 30;
+```
 
-📸 **Screenshot sugerido:** Resultados de la consulta SQL mostrando filas filtradas
+![image](https://github.com/user-attachments/assets/79db0512-f06a-4f88-b067-541d79b57327)
 
 ---
 
