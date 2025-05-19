@@ -70,7 +70,10 @@ Configurar controles de seguridad en Azure Databricks, incluyendo permisos a niv
 3. Nombre del secreto: `storage-key`  
 4. Valor: alguna clave de prueba o texto ficticio
 
-📸 **Screenshot sugerido:** Pantalla de secreto creado
+![image](https://github.com/user-attachments/assets/c9d317bc-6c28-413c-b7b2-e074c8986f1e)
+
+![image](https://github.com/user-attachments/assets/7c82b0dc-86dd-4a37-b015-4f469bafe46d)
+
 
 ---
 
