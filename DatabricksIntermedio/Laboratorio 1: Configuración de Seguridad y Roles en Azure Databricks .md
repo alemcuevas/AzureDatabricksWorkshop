@@ -95,14 +95,16 @@ Configurar controles de seguridad en Azure Databricks, incluyendo permisos a niv
 1. Abre un notebook en Databricks  
 2. Ejecuta:
 
+```
     %sh
     databricks secrets create-scope --scope kv_scope --scope-backend-type AZURE_KEYVAULT --resource-id <RESOURCE_ID> --dns-name <KEY_VAULT_URL>
+```
 
 Reemplaza:
 - `<RESOURCE_ID>` por el resource ID del Key Vault (desde "Propiedades" en Azure)
 - `<KEY_VAULT_URL>` por la URL pública del Key Vault (ej. `https://<nombre>.vault.azure.net/`)
 
-📸 **Screenshot sugerido:** Confirmación del scope creado
+![image](https://github.com/user-attachments/assets/76a9e9db-2563-427d-a86f-59194f2f647a)
 
 ---
 
