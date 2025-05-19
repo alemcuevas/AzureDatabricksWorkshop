@@ -23,12 +23,20 @@ Configurar controles de seguridad en Azure Databricks, incluyendo permisos a niv
 
 1. Entra al workspace de Azure Databricks  
 2. En el panel lateral, haz clic en **Admin Settings**  
-3. Ve a la pestaña **Groups**  
+3. Ve a la pestaña **Identity and access**  
 4. Crea dos grupos:
     - `data_engineers`
     - `data_scientists`
 
-📸 **Screenshot sugerido:** Lista de grupos creados
+![image](https://github.com/user-attachments/assets/ca3430f8-7f39-4475-8b8f-c0803f846920)
+
+![image](https://github.com/user-attachments/assets/473461be-c1c3-48f7-b6d6-d103d0dc5188)
+
+![image](https://github.com/user-attachments/assets/6f5b962b-21c3-4a81-842d-feb9b9810014)
+
+![image](https://github.com/user-attachments/assets/2b2bb4ce-f255-4290-a988-3b81a9cf72d2)
+
+![image](https://github.com/user-attachments/assets/2279432c-0161-49be-a8bf-1e8ab8a2dbf1)
 
 ---
 
@@ -38,7 +46,7 @@ Configurar controles de seguridad en Azure Databricks, incluyendo permisos a niv
 2. Haz clic en **Add Members**  
 3. Agrega usuarios de prueba al grupo
 
-📸 **Screenshot sugerido:** Usuarios dentro del grupo
+![image](https://github.com/user-attachments/assets/07d8e458-c057-4b85-acab-2167f37acf96)
 
 ---
 
