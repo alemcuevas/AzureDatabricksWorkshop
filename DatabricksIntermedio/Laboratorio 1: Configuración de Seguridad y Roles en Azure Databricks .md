@@ -84,6 +84,9 @@ Configurar controles de seguridad en Azure Databricks, incluyendo permisos a niv
 
 ![image](https://github.com/user-attachments/assets/7c82b0dc-86dd-4a37-b015-4f469bafe46d)
 
+![image](https://github.com/user-attachments/assets/ae6e69ee-1585-40c0-8aa4-2abd9c34255b)
+
+![image](https://github.com/user-attachments/assets/03bef3df-03c2-435e-80b4-917220c93c3b)
 
 ---
 
