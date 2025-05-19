@@ -113,7 +113,7 @@ Consulta: consumo promedio por década para México
         .mode("overwrite") \
         .save("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data-limpio")
 
-📸 **Screenshot sugerido:** Celda de escritura completada correctamente
+![image](https://github.com/user-attachments/assets/38f588c2-6359-4694-a25d-67f5b01f850f)
 
 ---
 
