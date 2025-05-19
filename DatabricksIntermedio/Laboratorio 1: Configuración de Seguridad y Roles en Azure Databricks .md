@@ -59,7 +59,17 @@ Configurar controles de seguridad en Azure Databricks, incluyendo permisos a niv
     - `Can Edit` para `data_engineers`
     - `Can View` para `data_scientists`
 
-📸 **Screenshot sugerido:** Configuración de permisos sobre un recurso
+![image](https://github.com/user-attachments/assets/cf5ba0e5-9c25-426f-bcd1-1614557c3315)
+
+![image](https://github.com/user-attachments/assets/0ff93e42-9346-4a81-90ae-c258fc00d14b)
+
+![image](https://github.com/user-attachments/assets/d9621f4e-91d5-4d45-8a3a-08e3faacdfc6)
+
+![image](https://github.com/user-attachments/assets/6f4cab25-68df-45ea-9a85-0c8d6d91a734)
+
+![image](https://github.com/user-attachments/assets/b0631b4b-92f4-424d-9601-23f38277d662)
+
+![image](https://github.com/user-attachments/assets/2a642b27-bbfd-4689-9e3b-34dbb1804833)
 
 ---
 
