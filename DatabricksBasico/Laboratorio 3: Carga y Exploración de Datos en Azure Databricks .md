@@ -29,7 +29,7 @@ Reemplaza `<clave_de_acceso>` con el valor de `key1` obtenido en el portal de Az
         "<clave_de_acceso>"
     )
 
-📸 **Screenshot sugerido:** Celda con `spark.conf.set` ejecutada sin errores
+![image](https://github.com/user-attachments/assets/fb584a61-c520-4b78-b4e0-47d066f2295b)
 
 ---
 
@@ -38,7 +38,7 @@ Reemplaza `<clave_de_acceso>` con el valor de `key1` obtenido en el portal de Az
     df = spark.read.option("header", True).csv("abfss://energia@storageenergydemo.dfs.core.windows.net/energy-consumption-by-source.csv")
     display(df)
 
-📸 **Screenshot sugerido:** Primeras filas del DataFrame cargado correctamente
+![image](https://github.com/user-attachments/assets/a892a043-1e17-4d5e-9374-9b8f090b459b)
 
 ---
 
@@ -59,7 +59,7 @@ Deberías ver columnas como:
 - `Other Renewables Consumption - EJ`
 - `Primary energy consumption (EJ)`
 
-📸 **Screenshot sugerido:** Salida de `printSchema()` mostrando los tipos
+![image](https://github.com/user-attachments/assets/cbe79cc8-0907-4165-be33-a09ced3815d9)
 
 ---
 
@@ -73,7 +73,9 @@ Ver los datos de México:
 
     df.filter(df["Country"] == "Mexico").display()
 
-📸 **Screenshot sugerido:** Resultados del filtro por país
+![image](https://github.com/user-attachments/assets/eaa55d59-f8e6-4fb0-b231-bc8e31e3f774)
+
+![image](https://github.com/user-attachments/assets/6f666c96-5b89-4a0d-875f-52556e47bb38)
 
 ---
 ## 💾 ¿Por qué guardar los datos en formato Delta Lake?
@@ -140,7 +142,7 @@ Escribe el DataFrame completo como tabla Delta:
 
     df.write.format("delta").mode("overwrite").save("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data")
 
-📸 **Screenshot sugerido:** Confirmación de escritura exitosa
+![image](https://github.com/user-attachments/assets/6d7574d9-3f46-46b3-ac45-26df97ed6f85)
 
 ---
 
@@ -149,7 +151,7 @@ Escribe el DataFrame completo como tabla Delta:
     df_delta = spark.read.format("delta").load("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data")
     display(df_delta)
 
-📸 **Screenshot sugerido:** Vista de los datos cargados desde Delta
+![image](https://github.com/user-attachments/assets/ee432262-772b-4d05-a113-814155fc3a30)
 
 ---
 
@@ -168,7 +170,7 @@ Escribe el DataFrame completo como tabla Delta:
         ORDER BY `Primary energy consumption (EJ)` DESC
         LIMIT 10
 
-📸 **Screenshot sugerido:** Tabla ordenada con los países de mayor consumo
+![image](https://github.com/user-attachments/assets/98415037-06a8-4f9d-ab16-a319926289a1)
 
 ---
 
