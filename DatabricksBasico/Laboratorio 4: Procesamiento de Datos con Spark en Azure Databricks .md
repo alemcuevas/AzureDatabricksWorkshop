@@ -53,7 +53,9 @@ Eliminar registros donde no haya valor para la energía primaria consumida:
     df_clean = df.na.drop(subset=["Primary energy consumption (EJ)"])
     df_clean.count()
 
-📸 **Screenshot sugerido:** Conteo de registros después de limpieza
+![image](https://github.com/user-attachments/assets/ff96d034-eb61-4554-941e-007a4b0ef662)
+
+![image](https://github.com/user-attachments/assets/7c4af051-0ed6-42aa-a4f9-192ac5ea124d)
 
 ---
 
@@ -70,7 +72,8 @@ Convertimos de exajulios (EJ) a teravatios-hora (TWh), usando la equivalencia:
         col("Primary energy consumption (EJ)") * 277.778
     )
 
-📸 **Screenshot sugerido:** Nuevas columnas visualizadas con `display()`
+![image](https://github.com/user-attachments/assets/39534749-81e6-4b55-b851-b646c068ab5c)
+
 
 ---
 
@@ -81,7 +84,7 @@ Convertimos de exajulios (EJ) a teravatios-hora (TWh), usando la equivalencia:
         .orderBy("sum(Primary energy consumption (TWh))", ascending=False) \
         .show(10)
 
-📸 **Screenshot sugerido:** Tabla de países con mayor consumo total
+![image](https://github.com/user-attachments/assets/17d2e69d-a604-454d-a78f-5948adda7153)
 
 ---
 
@@ -100,7 +103,7 @@ Consulta: consumo promedio por década para México
     GROUP BY Decada
     ORDER BY Decada
 
-📸 **Screenshot sugerido:** Tabla mostrando consumo promedio por década
+![image](https://github.com/user-attachments/assets/ce1ea284-a009-451e-ba8c-d7c8ed47c63b)
 
 ---
 
