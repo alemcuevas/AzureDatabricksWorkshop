@@ -25,7 +25,7 @@ Aplicar transformaciones y agregaciones sobre el dataset energético usando Spar
     df = spark.read.format("delta").load("abfss://energia@storageenergydemo.dfs.core.windows.net/delta/energy-data")
     display(df)
 
-📸 **Screenshot sugerido:** Vista de los datos cargados desde Delta
+![image](https://github.com/user-attachments/assets/4ede4f10-06d5-4e79-9c5b-9a227977582b)
 
 ---
 
@@ -42,7 +42,7 @@ Revisa que las columnas incluyan:
 - ...
 - `Primary energy consumption (EJ)`
 
-📸 **Screenshot sugerido:** Resultado de `printSchema`
+![image](https://github.com/user-attachments/assets/3275e519-8672-4924-b761-60092a8d9045)
 
 ---
 
