@@ -43,7 +43,7 @@ Realiza una agregación sin caché ni particionamiento:
 
     df.groupBy("Country").agg(avg("Primary_energy_consumption_TWh")).show(10)
 
-📸 **Screenshot sugerido:** Plan de ejecución sin cache
+![image](https://github.com/user-attachments/assets/1184ed71-1cc3-4677-a6c1-6d992a45e5e9)
 
 ---
 
@@ -56,7 +56,7 @@ Repite una consulta para observar mejora de tiempo:
 
     df.groupBy("Year").count().show()
 
-📸 **Screenshot sugerido:** Comparativa de tiempo entre consulta antes y después del cache
+![image](https://github.com/user-attachments/assets/8b799c6e-4d67-4f09-b0ac-a8a4c8e71f81)
 
 ---
 
@@ -77,6 +77,8 @@ Repite una consulta para observar mejora de tiempo:
     df_part.filter("Year = 2020").display()
 
 ✅ Spark ahora puede hacer **partition pruning** para leer solo archivos del año 2020
+
+
 
 ---
 
