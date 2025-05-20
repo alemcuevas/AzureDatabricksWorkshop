@@ -24,7 +24,7 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
     df_bronze = spark.read.format("delta").load("abfss://bronze@storageenergydemo.dfs.core.windows.net/energy")
     display(df_bronze)
 
-📸 **Screenshot sugerido:** Datos cargados desde Bronze
+![image](https://github.com/user-attachments/assets/f1277e70-b2db-40f0-94fb-247f52305599)
 
 ---
 
@@ -40,7 +40,8 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
 
     df_silver.write.format("delta").mode("overwrite").save("abfss://silver@storageenergydemo.dfs.core.windows.net/energy")
 
-📸 **Screenshot sugerido:** Confirmación de escritura exitosa
+![image](https://github.com/user-attachments/assets/10ed549e-ba1d-4b75-9187-e3c27ca74924)
+
 
 ---
 
@@ -48,6 +49,8 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
 
     df_ver = spark.read.format("delta").load("abfss://silver@storageenergydemo.dfs.core.windows.net/energy")
     display(df_ver)
+    
+![image](https://github.com/user-attachments/assets/b38d9afe-16de-4a4b-bb96-59bfc6e37c1c)
 
 ---
 
