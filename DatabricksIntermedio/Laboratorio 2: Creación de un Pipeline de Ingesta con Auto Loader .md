@@ -81,15 +81,18 @@ Este código permite que tu pipeline procese automáticamente cualquier archivo 
 
 ### 3. Crear una lectura continua con Auto Loader
 
-    from pyspark.sql.functions import *
+from pyspark.sql.functions import *
 
-    df_auto = (
-        spark.readStream
-        .format("cloudFiles")
-        .option("cloudFiles.format", "csv")
-        .option("header", "true")
-        .load("abfss://landing@storageenergydemo.dfs.core.windows.net/")
-    )
+```
+df_auto = (
+    spark.readStream
+    .format("cloudFiles")
+    .option("cloudFiles.format", "csv")
+    .option("header", "true")
+    .option("cloudFiles.schemaLocation", "abfss://landing@storageenergydemo.dfs.core.windows.net/_schemas/")
+    .load("abfss://landing@storageenergydemo.dfs.core.windows.net/")
+)
+```
 
 ![image](https://github.com/user-attachments/assets/16ec13ce-eb55-4696-b127-6f2b1156e792)
 
@@ -98,6 +101,8 @@ Este código permite que tu pipeline procese automáticamente cualquier archivo 
 ### 4. Agregar columna de fecha de carga
 
     df_transformed = df_auto.withColumn("ingestion_date", current_timestamp())
+
+![image](https://github.com/user-attachments/assets/6074f4c6-5a92-4ee0-a1d6-a57440766230)
 
 ---
 
