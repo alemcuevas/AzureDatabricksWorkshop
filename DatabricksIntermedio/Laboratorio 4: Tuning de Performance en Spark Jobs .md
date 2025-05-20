@@ -78,7 +78,60 @@ Repite una consulta para observar mejora de tiempo:
 
 ✅ Spark ahora puede hacer **partition pruning** para leer solo archivos del año 2020
 
+## 🌲 ¿Qué es Partition Pruning?
 
+**Partition Pruning** es una técnica de optimización en Apache Spark y Azure Databricks que permite **leer solo las particiones necesarias** de una tabla cuando se aplica un filtro en una consulta. Esto mejora considerablemente el rendimiento, especialmente en tablas muy grandes.
+
+---
+
+### ✅ ¿Cómo funciona?
+
+Si una tabla Delta está particionada por una columna como `Year`, y haces una consulta con un filtro como `WHERE Year = 2022`, Spark identifica automáticamente que solo necesita acceder a la carpeta `Year=2022`, y **evita leer todas las demás particiones**.
+
+---
+
+### 📦 Ejemplo práctico
+
+Supón que tienes una tabla Delta guardada en la siguiente ruta:
+
+abfss://silver@storageaccount.dfs.core.windows.net/energy_partitioned
+
+Y que esa tabla fue escrita usando `.partitionBy("Year")`.
+
+Al ejecutar este código:
+
+**Leer datos particionados:**
+
+df = spark.read.format("delta").load("abfss://silver@storageaccount.dfs.core.windows.net/energy_partitioned")
+
+**Filtrar por año:**
+
+df.filter("Year = 2020").display()
+
+Spark automáticamente aplicará **partition pruning** y solo leerá los archivos de la carpeta `/Year=2020/`.
+
+---
+
+### 📌 Buenas prácticas para aprovechar partition pruning
+
+- Siempre que sea posible, escribe los datos con `.partitionBy("columna")` en el `DataFrameWriter`.
+- Aplica filtros directos sobre columnas particionadas (por ejemplo, `Year = 2022`).
+- Evita transformar la columna particionada en la consulta (por ejemplo, `YEAR(fecha)` evita el pruning).
+- Puedes confirmar que el pruning se aplica usando `.explain(True)` en el DataFrame.
+
+---
+
+### 🚫 Cosas que pueden romper el pruning
+
+- Usar funciones como `year(fecha)` en lugar de filtrar directamente por `Year`
+- No definir correctamente la columna como partición al escribir los datos
+- Cargar datos sin especificar un formato particionado o sin respetar la estructura
+
+---
+
+### 💡 Consejo
+
+Partition pruning es especialmente útil en arquitecturas con particionamiento por tiempo (año, mes, día) o regiones. Úsalo para minimizar el volumen de lectura y acelerar los tiempos de ejecución en Databricks.
 
 ---
 
