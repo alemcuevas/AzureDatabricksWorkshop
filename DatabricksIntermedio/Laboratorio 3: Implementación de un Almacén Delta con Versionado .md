@@ -58,20 +58,24 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
 
 1. Sobrescribe un registro para simular una modificación:
 
+```
     from pyspark.sql.functions import lit
 
     df_mod = df_ver.withColumn("Nuclear Consumption - EJ", lit(0))
     df_mod.write.format("delta").mode("overwrite").save("abfss://silver@storageenergydemo.dfs.core.windows.net/energy")
+```
 
 📸 **Screenshot sugerido:** Confirmación del cambio
 
 2. Consulta la versión anterior:
 
+```
     df_version_0 = spark.read.format("delta") \
         .option("versionAsOf", 0) \
         .load("abfss://silver@storageenergydemo.dfs.core.windows.net/energy")
 
     display(df_version_0)
+```
 
 📸 **Screenshot sugerido:** Comparación entre versiones
 
@@ -81,9 +85,11 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
 
 **Requiere cluster con Runtime 8.4+ y Delta Engine**
 
+```
     spark.sql("""
     OPTIMIZE delta.`abfss://silver@storageenergydemo.dfs.core.windows.net/energy`
     """)
+```
 
 📸 **Screenshot sugerido:** Tabla con archivos optimizados
 
@@ -91,9 +97,11 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
 
 ### 6. Aplicar `VACUUM` para eliminar archivos obsoletos
 
+```
     spark.sql("""
     VACUUM delta.`abfss://silver@storageenergydemo.dfs.core.windows.net/energy` RETAIN 0 HOURS
     """)
+```
 
 ⚠️ Asegúrate de que el Time Travel ya no sea necesario antes de eliminar versiones.
 
