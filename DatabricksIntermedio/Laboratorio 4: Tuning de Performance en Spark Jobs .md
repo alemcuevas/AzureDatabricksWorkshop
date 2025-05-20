@@ -67,7 +67,7 @@ Repite una consulta para observar mejora de tiempo:
       .partitionBy("Year") \
       .save("abfss://silver@storageenergydemo.dfs.core.windows.net/energy_partitioned")
 
-📸 **Screenshot sugerido:** Tiempo de carga reducido al filtrar por año
+![image](https://github.com/user-attachments/assets/cbd32759-6296-483b-ab60-d392e801519e)
 
 ---
 
@@ -88,7 +88,7 @@ Usa el método `.explain(True)` para visualizar el efecto de AQE:
 
     df.groupBy("Country").agg(avg("Primary_energy_consumption_TWh")).explain(True)
 
-📸 **Screenshot sugerido:** Plan de ejecución con AQE activo
+![image](https://github.com/user-attachments/assets/cbe25b8c-d9ce-43c3-b393-18c5288ecb75)
 
 ---
 
