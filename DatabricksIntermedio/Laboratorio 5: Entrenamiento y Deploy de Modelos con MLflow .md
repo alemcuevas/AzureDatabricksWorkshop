@@ -28,32 +28,41 @@ Entrenar un modelo de regresión con Spark MLlib, realizar seguimiento de experi
 
 ### 2. Preparar columnas para entrenamiento
 
-    from pyspark.sql.functions import col
-    from pyspark.ml.feature import VectorAssembler
+```
+from pyspark.sql.functions import col
+from pyspark.ml.feature import VectorAssembler
 
-    df_ml = df.select(
-        "Coal Consumption - EJ",
-        "Oil Consumption - EJ",
-        "Gas Consumption - EJ",
-        "Nuclear Consumption - EJ",
-        "Hydro Consumption - EJ",
-        "Renewables Consumption - EJ",
-        "Primary_energy_consumption_TWh"
-    ).dropna()
+# Lista de columnas a usar
+cols = [
+    "coal_consumption",
+    "oil_consumption",
+    "gas_consumption",
+    "Nuclear_Consumption_EJ",
+    "hydro_consumption",
+    "renewables_consumption",
+    "primary_energy_consumption"
+]
 
-    assembler = VectorAssembler(
-        inputCols=[
-            "Coal Consumption - EJ",
-            "Oil Consumption - EJ",
-            "Gas Consumption - EJ",
-            "Nuclear Consumption - EJ",
-            "Hydro Consumption - EJ",
-            "Renewables Consumption - EJ"
-        ],
-        outputCol="features"
-    )
+# Convertir columnas a tipo float
+df_ml = df.select(cols)
+for c in cols:
+    df_ml = df_ml.withColumn(c, col(c).cast("float"))
 
-    df_final = assembler.transform(df_ml).select("features", "Primary_energy_consumption_TWh")
+# Eliminar filas con valores nulos después del casteo
+df_ml = df_ml.dropna()
+
+# Crear el vector de características
+assembler = VectorAssembler(
+    inputCols=cols[:-1],  # Todas excepto la última (que es la variable objetivo)
+    outputCol="features"
+)
+
+# Crear el DataFrame final para ML
+df_final = assembler.transform(df_ml).select("features", col("primary_energy_consumption").alias("label"))
+
+# Mostrar
+display(df_final)
+```
 
 ---
 
