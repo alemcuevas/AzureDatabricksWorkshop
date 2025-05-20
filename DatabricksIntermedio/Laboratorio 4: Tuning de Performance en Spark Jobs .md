@@ -27,6 +27,70 @@ Aplicar técnicas de optimización en Spark: uso de cache, particionamiento efic
 
 ---
 
+## 🧠 ¿Qué es Adaptive Query Execution (AQE)?
+
+**Adaptive Query Execution (AQE)** es una funcionalidad de Apache Spark que permite **optimizar el plan de ejecución de una consulta en tiempo real**, es decir, mientras se está ejecutando. Esto mejora el rendimiento automáticamente sin necesidad de que el usuario ajuste configuraciones manualmente.
+
+---
+
+### ✅ ¿Qué hace AQE?
+
+- **Reoptimiza el plan de ejecución** basándose en estadísticas reales observadas durante el runtime
+- Mejora la eficiencia de **joins, agregaciones y particiones**
+- Puede reducir significativamente el tiempo de ejecución de ciertas consultas complejas
+
+---
+
+### 🛠 Características principales
+
+1. **Join Reordering**  
+   Cambia dinámicamente el orden de los joins para que las tablas pequeñas se usen primero.
+
+2. **Join Strategy Switching**  
+   Cambia automáticamente entre broadcast join y sort merge join dependiendo del tamaño real de los datos.
+
+3. **Dynamic Partition Coalescing**  
+   Une particiones pequeñas generadas por shuffle para evitar sobrecarga de tareas.
+
+---
+
+### 🚀 Cómo activar AQE
+
+AQE viene desactivado por defecto en algunas versiones. Para activarlo dentro de un notebook de Databricks:
+
+**Configuración recomendada:**
+
+spark.conf.set("spark.sql.adaptive.enabled", "true")
+
+También puedes activar configuraciones específicas como:
+
+spark.conf.set("spark.sql.adaptive.coalescePartitions.enabled", "true")
+
+spark.conf.set("spark.sql.adaptive.skewJoin.enabled", "true")
+
+---
+
+### 📊 ¿Cómo saber si AQE está funcionando?
+
+- Puedes usar el método `.explain(True)` sobre tu DataFrame para ver un plan de ejecución detallado.
+- También puedes ir a la pestaña **Spark UI > SQL** y ver si aparece la optimización en tiempo de ejecución aplicada.
+
+---
+
+### ⚠️ Consideraciones
+
+- AQE requiere una versión moderna de Spark (3.0 en adelante)
+- Aunque mejora muchas consultas, no garantiza mejoras en todos los casos
+- Asegúrate de no tener configuraciones de Spark que entren en conflicto con la optimización dinámica
+
+---
+
+### 💡 Consejo
+
+Activa AQE en clústeres donde se ejecutan cargas analíticas con joins o agregaciones pesadas. La optimización automática puede darte beneficios inmediatos sin cambiar tu lógica de código.
+
+---
+
 ### 2. Activar Adaptive Query Execution (AQE)
 
     spark.conf.set("spark.sql.adaptive.enabled", "true")
