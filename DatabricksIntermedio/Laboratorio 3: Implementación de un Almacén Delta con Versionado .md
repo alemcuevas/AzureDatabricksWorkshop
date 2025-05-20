@@ -59,13 +59,16 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
 1. Sobrescribe un registro para simular una modificación:
 
 ```
-    from pyspark.sql.functions import lit
+from pyspark.sql.functions import lit
 
-    df_mod = df_ver.withColumn("Nuclear Consumption - EJ", lit(0))
-    df_mod.write.format("delta").mode("overwrite").save("abfss://silver@storageenergydemo.dfs.core.windows.net/energy")
+df_mod = df_ver.withColumn("Nuclear_Consumption_EJ", lit(0))
+df_mod.write.format("delta") \
+    .option("mergeSchema", "true") \
+    .mode("overwrite") \
+    .save("abfss://silver@storageenergydemo.dfs.core.windows.net/energy")
 ```
 
-📸 **Screenshot sugerido:** Confirmación del cambio
+![image](https://github.com/user-attachments/assets/5d1d8881-83c0-4ab4-8ed1-2fc805d160c8)
 
 2. Consulta la versión anterior:
 
@@ -77,7 +80,7 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
     display(df_version_0)
 ```
 
-📸 **Screenshot sugerido:** Comparación entre versiones
+![image](https://github.com/user-attachments/assets/212d93ff-42ea-4c6c-97c1-f44b48cde011)
 
 ---
 
@@ -91,7 +94,7 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
     """)
 ```
 
-📸 **Screenshot sugerido:** Tabla con archivos optimizados
+![image](https://github.com/user-attachments/assets/bb3fecdf-613b-4046-b8b3-fd322462aeca)
 
 ---
 
@@ -102,6 +105,18 @@ Optimizar el almacenamiento de datos con Delta Lake en Azure Databricks, aplican
     VACUUM delta.`abfss://silver@storageenergydemo.dfs.core.windows.net/energy` RETAIN 0 HOURS
     """)
 ```
+
+![image](https://github.com/user-attachments/assets/94efa42c-758c-47fe-8f96-660c7e213c29)
+
+```
+spark.conf.set("spark.databricks.delta.retentionDurationCheck.enabled", "false")
+
+spark.sql("""
+    VACUUM delta.`abfss://silver@storageenergydemo.dfs.core.windows.net/energy` RETAIN 0 HOURS
+    """)
+```
+
+![image](https://github.com/user-attachments/assets/7a376dce-fa18-40fb-a594-b0a3db70f4db)
 
 ⚠️ Asegúrate de que el Time Travel ya no sea necesario antes de eliminar versiones.
 
