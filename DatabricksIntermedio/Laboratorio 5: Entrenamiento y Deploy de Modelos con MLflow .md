@@ -139,7 +139,7 @@ display(df_final)
     loaded_model = mlflow.spark.load_model(model_uri)
     loaded_model.transform(test).select("prediction").show(5)
 
-📸 **Screenshot sugerido:** Resultado de predicciones usando el modelo cargado del registro
+![image](https://github.com/user-attachments/assets/8603dfa0-81b0-45f7-948e-647d91b810e8)
 
 ---
 
