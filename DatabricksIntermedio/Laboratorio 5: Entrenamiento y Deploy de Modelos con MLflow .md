@@ -98,6 +98,8 @@ display(df_final)
         mlflow.log_metric("rmse", rmse)
         mlflow.spark.log_model(model, "modelo_regresion_energia")
 
+![image](https://github.com/user-attachments/assets/d6abf04e-e5f2-46c6-a252-824a4bcfef3f)
+
 ---
 
 ### 5. Visualizar el experimento en MLflow UI
@@ -106,7 +108,9 @@ display(df_final)
 2. Abre `/Experimentos/energia`  
 3. Observa métricas, artefactos y parámetros registrados
 
-📸 **Screenshot sugerido:** Tabla con el RMSE y artefactos registrados
+![image](https://github.com/user-attachments/assets/1c2d385a-59e5-4c76-b2e1-9ec6b0aaf70c)
+
+![image](https://github.com/user-attachments/assets/101b3a7b-6dbe-447a-895d-9e9c41129c9a)
 
 ---
 
