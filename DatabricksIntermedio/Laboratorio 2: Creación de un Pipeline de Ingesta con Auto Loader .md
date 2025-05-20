@@ -33,8 +33,6 @@ Configurar Auto Loader en Azure Databricks para leer datos nuevos automáticamen
 
     display(dbutils.fs.ls("abfss://landing@storageenergydemo.dfs.core.windows.net/"))
 
-📸 **Screenshot sugerido:** Lista de archivos disponibles para lectura
-
 ---
 ## 🚀 ¿Para qué sirve Auto Loader en Azure Databricks?
 
@@ -116,7 +114,7 @@ df_auto = (
         .start("abfss://bronze@storageenergydemo.dfs.core.windows.net/energy")
     )
 
-📸 **Screenshot sugerido:** Celda ejecutada mostrando que el stream está activo
+![image](https://github.com/user-attachments/assets/116e2dc1-3184-477c-963d-6cdce34f58a0)
 
 ---
 
@@ -124,7 +122,7 @@ df_auto = (
 
     display(spark.read.format("delta").load("abfss://bronze@storageenergydemo.dfs.core.windows.net/energy"))
 
-📸 **Screenshot sugerido:** Registros cargados con columna `ingestion_date`
+![image](https://github.com/user-attachments/assets/bce3b10e-cdff-49f8-9a0e-efec29c5625e)
 
 ---
 
