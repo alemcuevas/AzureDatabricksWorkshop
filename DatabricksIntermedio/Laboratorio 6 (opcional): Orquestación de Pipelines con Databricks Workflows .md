@@ -1,4 +1,4 @@
-# 🧪 Laboratorio 6: Orquestación de Pipelines con Databricks Workflows
+# 🧪 Laboratorio 6 (opcional): Orquestación de Pipelines con Databricks Workflows
 
 ## 🎯 Objetivo  
 Crear un Workflow (job) en Databricks para orquestar tareas secuenciales de procesamiento de datos. Integrar la ejecución del workflow con Azure Data Factory para automatización de extremo a extremo.
