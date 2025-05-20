@@ -18,6 +18,52 @@ Configurar Auto Loader en Azure Databricks para leer datos nuevos automáticamen
 
 ---
 
+## 🆚 Diferencia entre `abfss://` y `wasbs://`
+
+Cuando trabajas con Azure Databricks y accedes a datos en Azure Storage, verás dos esquemas comunes en las rutas:
+
+### 🔹 abfss:// – Azure Blob File System Secure
+
+- Significa: **Azure Blob File System Secure**
+- Usa el conector nativo de **ADLS Gen2**
+- Optimizado para análisis con Spark y Databricks
+- Soporta estructura jerárquica de carpetas y ACLs
+- **Recomendado para entornos modernos y productivos**
+
+Ejemplo de uso:  
+abfss://container@storageaccount.dfs.core.windows.net/ruta/
+
+---
+
+### 🔸 wasbs:// – Windows Azure Storage Blob Secure
+
+- Significa: **Windows Azure Storage Blob Secure**
+- Protocolo antiguo usado con cuentas **Blob Storage Gen1**
+- No soporta carpetas jerárquicas ni ACLs
+- Rendimiento y compatibilidad más limitados
+- Útil solo para **compatibilidad heredada**
+
+Ejemplo de uso:  
+wasbs://container@storageaccount.blob.core.windows.net/ruta/
+
+---
+
+### ✅ Comparación rápida
+
+| Característica                        | abfss:// (ADLS Gen2) | wasbs:// (Blob Gen1) |
+|--------------------------------------|----------------------|----------------------|
+| Jerarquía de carpetas                | ✅ Sí               | ❌ No               |
+| ACLs (control de acceso granular)    | ✅ Sí               | ❌ No               |
+| Rendimiento con Spark                | ✅ Óptimo           | ⚠️ Limitado         |
+| Recomendado en Databricks            | ✅ Sí               | ❌ No               |
+| Seguridad y autenticación moderna    | ✅ Mejor soporte     | ⚠️ Básico           |
+
+---
+
+💡 **Consejo**: Siempre que puedas, usa `abfss://` con cuentas **ADLS Gen2**. Ofrece más seguridad, mejor rendimiento y compatibilidad total con funcionalidades analíticas modernas como Auto Loader y Delta Lake.
+
+---
+
 ## 📝 Pasos
 
 ### 1. Establecer la clave de acceso (si no usas Key Vault)
