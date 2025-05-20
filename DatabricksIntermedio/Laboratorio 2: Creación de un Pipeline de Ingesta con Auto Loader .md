@@ -27,8 +27,6 @@ Configurar Auto Loader en Azure Databricks para leer datos nuevos automáticamen
         "<clave_de_acceso>"
     )
 
-📸 **Screenshot sugerido:** Confirmación de configuración sin errores
-
 ---
 
 ### 2. Verificar los archivos en la zona landing
@@ -36,6 +34,48 @@ Configurar Auto Loader en Azure Databricks para leer datos nuevos automáticamen
     display(dbutils.fs.ls("abfss://landing@storageenergydemo.dfs.core.windows.net/"))
 
 📸 **Screenshot sugerido:** Lista de archivos disponibles para lectura
+
+---
+## 🚀 ¿Para qué sirve Auto Loader en Azure Databricks?
+
+Auto Loader es una funcionalidad de Databricks diseñada para facilitar la **ingesta automática de archivos nuevos** desde almacenamiento en la nube, como Azure Data Lake Storage (ADLS) o Blob Storage, sin necesidad de procesos manuales o programación compleja.
+
+### ✅ Beneficios clave
+
+- **Detección automática de archivos nuevos** sin necesidad de hacer polling intensivo
+- **Escalabilidad automática**: maneja millones de archivos de forma eficiente
+- **Soporte nativo para formatos comunes** como CSV, JSON, Parquet, Avro, etc.
+- Compatible con pipelines de **Structured Streaming** para procesamiento en tiempo real o cuasi-real
+
+### 🧠 ¿Cuándo usarlo?
+
+Usa Auto Loader cuando necesitas:
+
+- Procesar archivos nuevos que llegan continuamente a una carpeta en ADLS
+- Automatizar la carga de datos en una arquitectura de tipo Bronze → Silver → Gold
+- Construir pipelines de datos confiables y fáciles de mantener en Databricks
+
+### 🔁 Comparado con otras opciones
+
+| Método             | Auto Loader              | read.format(\"csv\") o manual |
+|--------------------|--------------------------|-------------------------------|
+| Detección de nuevos archivos | ✅ Automática              | ❌ Manual                     |
+| Escalable a millones de archivos | ✅ Sí                  | ❌ Limitado                  |
+| Integración con streaming | ✅ Nativo                   | ⚠️ No recomendado            |
+| Uso en producción | ✅ Recomendado             | ❌ Solo para pruebas puntuales |
+
+### 📌 Ejemplo básico
+
+```python
+df = (
+  spark.readStream
+  .format("cloudFiles")
+  .option("cloudFiles.format", "csv")
+  .load("abfss://landing@<storage>.dfs.core.windows.net/datos/")
+)
+```
+
+Este código permite que tu pipeline procese automáticamente cualquier archivo nuevo que llegue a la carpeta datos/ en tu contenedor landing.
 
 ---
 
@@ -51,7 +91,7 @@ Configurar Auto Loader en Azure Databricks para leer datos nuevos automáticamen
         .load("abfss://landing@storageenergydemo.dfs.core.windows.net/")
     )
 
-📸 **Screenshot sugerido:** Esquema detectado por Auto Loader
+![image](https://github.com/user-attachments/assets/16ec13ce-eb55-4696-b127-6f2b1156e792)
 
 ---
 
