@@ -121,7 +121,15 @@ display(df_final)
 3. Crea un nuevo modelo llamado `regresion_energia`  
 4. Confirma el registro
 
-📸 **Screenshot sugerido:** Modelo registrado en el Model Registry
+![image](https://github.com/user-attachments/assets/21747957-dc2a-4d66-9c58-9780a8eaaec8)
+
+![image](https://github.com/user-attachments/assets/2784a1fa-8d6d-42b2-a876-00759eda457f)
+
+![image](https://github.com/user-attachments/assets/ad2d91a8-ea37-44e2-987c-89d35e009bdd)
+
+![image](https://github.com/user-attachments/assets/0c00af01-74cf-4897-87c0-950d95206e9e)
+
+![image](https://github.com/user-attachments/assets/ab316a93-2ed9-4188-b114-759c0cd9cf34)
 
 ---
 
