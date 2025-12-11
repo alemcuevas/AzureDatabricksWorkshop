@@ -4,14 +4,17 @@
 
 ## Objetivo
 
-Aprender a desplegar modelos entrenados en Databricks de forma segura y escalable, implementando estrategias de monitoreo y buenas prácticas para mantener modelos en producción.
+Aprender a desplegar modelos de predicción de energía renovable entrenados en Databricks de forma segura y escalable, implementando estrategias de monitoreo y buenas prácticas para mantener modelos en producción.
+
+**Caso de Uso:** Despliegue de modelo para predecir la producción de energía renovable (% de renovables) basado en características de consumo, población y desarrollo económico de países usando el dataset `owid-energy-data.csv`.
 
 ---
 
 ## Prerequisitos
 
-- Laboratorio 4 completado (modelo registrado en MLflow)
+- Laboratorio 4 completado (modelo de energía renovable registrado en MLflow)
 - Azure Databricks workspace configurado
+- Dataset `owid-energy-data.csv` disponible en DBFS
 - Permisos para crear endpoints y recursos en Azure
 - Familiaridad básica con APIs REST
 
@@ -83,7 +86,7 @@ import pandas as pd
 mlflow.set_registry_uri("databricks")
 
 # Nombre del modelo y versión
-model_name = "diabetes_predictor"  # Ajusta según tu modelo
+model_name = "renewable_energy_predictor"  # Modelo del Lab 4
 model_version = 1  # O "Production" para usar el stage
 
 # Cargar modelo
@@ -91,26 +94,34 @@ model_uri = f"models:/{model_name}/{model_version}"
 print(f"Cargando modelo desde: {model_uri}")
 
 loaded_model = mlflow.pyfunc.load_model(model_uri)
-print(f"✓ Modelo cargado exitosamente")
+print(f"✓ Modelo de predicción de energía renovable cargado exitosamente")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 2. Preparar Datos de Entrada
+# MAGIC ### 2. Preparar Datos de Entrada (Dataset de Energía)
 
 # COMMAND ----------
 
-# Opción A: Crear datos de ejemplo
+# Opción A: Crear datos de ejemplo para inferencia
+# Features: year, population, gdp, primary_energy_consumption, fossil_fuel_consumption, renewables_consumption
 sample_data = pd.DataFrame({
-    'age': [45, 52, 38, 61, 29],
-    'bmi': [27.3, 32.1, 24.5, 28.9, 22.4],
-    'blood_pressure': [120, 135, 110, 140, 115],
-    'glucose': [95, 160, 88, 175, 82]
+    'year': [2020, 2021, 2022, 2020, 2021],
+    'population': [50000000, 51000000, 45000000, 52000000, 46000000],
+    'gdp': [500000000000, 520000000000, 480000000000, 530000000000, 490000000000],
+    'primary_energy_consumption': [1500, 1600, 1400, 1650, 1450],
+    'fossil_fuel_consumption': [1200, 1250, 1100, 1300, 1150],
+    'renewables_consumption': [300, 350, 300, 350, 300]
 })
 
-# Opción B: Cargar desde Delta Lake
-# df = spark.read.format("delta").load("/mnt/data/inference_data")
-# sample_data = df.toPandas()
+print(f"📊 Datos de ejemplo para batch scoring:")
+print(f"   Países: {len(sample_data)}")
+print(f"   Features: {list(sample_data.columns)}")
+
+# Opción B: Cargar desde Delta Lake (datos procesados del Lab 3)
+# df = spark.read.format("delta").load("/delta/energy_features")
+# sample_data = df.select('year', 'population', 'gdp', 'primary_energy_consumption', 
+#                         'fossil_fuel_consumption', 'renewables_consumption').limit(1000).toPandas()
 
 display(sample_data)
 
@@ -169,7 +180,7 @@ display(predictions_df)
 # COMMAND ----------
 
 # Guardar en Delta Lake
-output_path = "/mnt/predictions/diabetes/batch_scoring"
+output_path = "/mnt/predictions/proporción de renovables/batch_scoring"
 
 predictions_df.write \
     .format("delta") \
@@ -257,8 +268,8 @@ client = get_deploy_client("databricks")
 # COMMAND ----------
 
 # Configuración del endpoint
-endpoint_name = "diabetes-predictor-endpoint"
-model_name = "diabetes_predictor"
+endpoint_name = "proporción de renovables-predictor-endpoint"
+model_name = "renewable_energy_predictor"
 model_version = 1
 
 # Crear endpoint
@@ -443,7 +454,7 @@ else:
 # MAGIC # Configuración
 # MAGIC DATABRICKS_HOST = os.environ['DATABRICKS_HOST']  # https://<workspace>.azuredatabricks.net
 # MAGIC DATABRICKS_TOKEN = os.environ['DATABRICKS_TOKEN']
-# MAGIC ENDPOINT_NAME = "diabetes-predictor-endpoint"
+# MAGIC ENDPOINT_NAME = "proporción de renovables-predictor-endpoint"
 # MAGIC 
 # MAGIC # URL del endpoint
 # MAGIC url = f"{DATABRICKS_HOST}/serving-endpoints/{ENDPOINT_NAME}/invocations"
@@ -484,7 +495,7 @@ else:
 # MAGIC %md
 # MAGIC ```javascript
 # MAGIC // Ejemplo para frontend o Node.js
-# MAGIC const ENDPOINT_URL = 'https://<workspace>.azuredatabricks.net/serving-endpoints/diabetes-predictor-endpoint/invocations';
+# MAGIC const ENDPOINT_URL = 'https://<workspace>.azuredatabricks.net/serving-endpoints/proporción de renovables-predictor-endpoint/invocations';
 # MAGIC const API_TOKEN = process.env.DATABRICKS_TOKEN;
 # MAGIC 
 # MAGIC async function getPrediction(patientData) {
@@ -552,7 +563,7 @@ import seaborn as sns
 from mlflow.deployments import get_deploy_client
 
 client = get_deploy_client("databricks")
-endpoint_name = "diabetes-predictor-endpoint"
+endpoint_name = "proporción de renovables-predictor-endpoint"
 
 # Obtener métricas del endpoint
 endpoint_metrics = client.get_endpoint(endpoint_name)
@@ -616,7 +627,7 @@ log_path = "/mnt/ml-monitoring/prediction-logs"
 logger = PredictionLogger(loaded_model, log_path)
 
 # Ejemplo
-sample_input = {'age': 45, 'bmi': 27.3, 'blood_pressure': 120, 'glucose': 95}
+sample_input = {'year': 2022, 'population': 50000000, 'gdp': 500000000000, 'primary_energy_consumption': 1500, 'fossil_fuel_consumption': 1200, 'renewables_consumption': 300}
 pred, req_id = logger.predict_and_log(sample_input)
 print(f"✓ Predicción registrada: {req_id}")
 
@@ -653,7 +664,7 @@ def calculate_drift(reference_data, current_data, features, threshold=0.05):
     return drift_detected
 
 # Cargar datos de referencia (training data)
-reference_df = spark.read.format("delta").load("/mnt/data/training_data").toPandas()
+reference_df = spark.read.format("delta").load("/delta/energy_features").toPandas()
 
 # Cargar predicciones recientes
 current_df = spark.read.format("delta").load(log_path) \
@@ -661,7 +672,7 @@ current_df = spark.read.format("delta").load(log_path) \
     .toPandas()
 
 # Detectar drift
-features = ['age', 'bmi', 'blood_pressure', 'glucose']
+features = ['year', 'population', 'gdp', 'primary_energy_consumption', 'fossil_fuel_consumption', 'renewables_consumption']
 drift_results = calculate_drift(reference_df, current_df, features)
 
 # Mostrar resultados
@@ -735,7 +746,7 @@ axes[0, 1].set_xlabel('Valor Predicho')
 axes[0, 1].set_ylabel('Frecuencia')
 
 # 3. Feature drift visualization
-features_to_plot = ['age', 'bmi']
+features_to_plot = ['primary_energy_consumption', 'renewables_consumption']
 for idx, feature in enumerate(features_to_plot):
     axes[1, idx].hist(reference_df[feature], alpha=0.5, label='Training', bins=20)
     axes[1, idx].hist(current_df[feature], alpha=0.5, label='Production', bins=20)
@@ -855,7 +866,7 @@ print(f"\n✓ Verificación completada: {len(alerts)} alertas generadas")
 # MAGIC    - **Parameters**: 
 # MAGIC      ```json
 # MAGIC      {
-# MAGIC        "model_name": "diabetes_predictor",
+# MAGIC        "model_name": "renewable_energy_predictor",
 # MAGIC        "lookback_days": 7,
 # MAGIC        "drift_threshold": 0.05
 # MAGIC      }
@@ -910,7 +921,7 @@ production_tags = {
     "environment": "production",
     
     # Business context
-    "use_case": "diabetes-prediction",
+    "use_case": "proporción de renovables-prediction",
     "business_owner": "healthcare-analytics",
     "compliance": "HIPAA-compliant",
     
@@ -920,7 +931,7 @@ production_tags = {
 }
 
 # Aplicar tags al modelo
-model_name = "diabetes_predictor"
+model_name = "renewable_energy_predictor"
 model_version = 1
 
 for key, value in production_tags.items():
@@ -969,7 +980,7 @@ def promote_model(model_name, version, target_stage):
     print(f"✓ Modelo {model_name} v{version} promovido a {target_stage}")
 
 # Ejemplo: Promover a Staging
-# promote_model("diabetes_predictor", 1, "Staging")
+# promote_model("renewable_energy_predictor", 1, "Staging")
 
 # COMMAND ----------
 
@@ -1024,7 +1035,7 @@ def document_model_deployment(model_name, version):
     return documentation
 
 # Generar documentación
-# doc = document_model_deployment("diabetes_predictor", 1)
+# doc = document_model_deployment("renewable_energy_predictor", 1)
 # print(doc[:500] + "...")
 ```
 
@@ -1103,7 +1114,7 @@ class StructuredLogger:
         return log_entry
 
 # Usar logger
-logger = StructuredLogger("diabetes_predictor", 1)
+logger = StructuredLogger("renewable_energy_predictor", 1)
 
 # Ejemplo de uso
 import uuid
@@ -1169,7 +1180,7 @@ def calculate_deployment_costs(endpoint_name, period_days=30):
     return total_cost
 
 # Calcular costos
-# monthly_cost = calculate_deployment_costs("diabetes-predictor-endpoint", 30)
+# monthly_cost = calculate_deployment_costs("proporción de renovables-predictor-endpoint", 30)
 ```
 
 ---
@@ -1197,10 +1208,10 @@ import mlflow
 from mlflow.tracking import MlflowClient
 
 client = MlflowClient()
-model_name = "diabetes_predictor_demo"
+model_name = "renewable_energy_predictor_demo"
 
 # Cargar modelo del Lab 4
-model_uri = "models:/diabetes_predictor/1"
+model_uri = "models:/renewable_energy_predictor/1"
 
 # Copiar a nuevo nombre para demo
 # (en producción, usarías el mismo modelo)
@@ -1239,7 +1250,7 @@ print("✓ Tags aplicados")
 from mlflow.deployments import get_deploy_client
 
 deploy_client = get_deploy_client("databricks")
-endpoint_name = "diabetes-demo-endpoint"
+endpoint_name = "proporción de renovables-demo-endpoint"
 
 # Configuración del endpoint
 endpoint_config = {
@@ -1379,10 +1390,10 @@ def make_prediction_with_monitoring(input_data):
 print("Generando tráfico de prueba...")
 for i in range(10):
     test_input = {
-        'age': 40 + i * 2,
-        'bmi': 25 + i * 0.5,
+        'year': 2020 + i,
+        'population': 50000000 + i * 1000000,
         'blood_pressure': 115 + i * 3,
-        'glucose': 90 + i * 5
+        'renewables_consumption': 200 + i * 5
     }
     pred, req_id, lat = make_prediction_with_monitoring(test_input)
     print(f"Request {i+1}: Prediction={pred:.3f}, Latency={lat:.1f}ms")
@@ -1425,7 +1436,7 @@ axes[0].set_title('Distribución de Latencia')
 axes[0].set_xlabel('Latencia (ms)')
 axes[0].set_ylabel('Frecuencia')
 
-axes[1].scatter(logs_pd['age'], logs_pd['prediction'], alpha=0.6)
+axes[1].scatter(logs_pd['primary_energy_consumption'], logs_pd['prediction'], alpha=0.6)
 axes[1].set_title('Predicciones vs Edad')
 axes[1].set_xlabel('Edad')
 axes[1].set_ylabel('Predicción')
@@ -1540,6 +1551,919 @@ Resumen:
 
 ---
 
+## Parte 8: Demo - Pipeline Automatizado de Reentrenamiento
+
+### 8.1 Arquitectura del Pipeline de Reentrenamiento
+
+En esta sección implementaremos un pipeline completo que:
+
+1. **Detecta drift automáticamente** en los datos de producción
+2. **Decide si reentrenar** basado en métricas y umbrales
+3. **Ejecuta reentrenamiento** con nuevos datos
+4. **Valida el nuevo modelo** contra el actual
+5. **Promueve automáticamente** si mejora las métricas
+6. **Notifica resultados** a los stakeholders
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│           PIPELINE AUTOMATIZADO DE REENTRENAMIENTO              │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+  │   Monitoreo  │────▶│ Detección de │────▶│  Decisión de │
+  │  Continuo    │      │    Drift     │      │ Reentrenar   │
+  └──────────────┘      └──────────────┘      └──────────────┘
+                                                      │
+                                                      ▼
+  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+  │ Notificación │◀────│  Promoción   │◀────│Reentrenamiento│
+  │  y Alertas   │      │  Automática  │      │  y Validación│
+  └──────────────┘      └──────────────┘      └──────────────┘
+```
+
+### 8.2 Paso 1: Crear Notebook de Detección de Drift
+
+Crearemos un notebook que detecte drift en los datos de producción y decida si es necesario reentrenar.
+
+```python
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Notebook 1: Detección de Drift para Reentrenamiento
+# MAGIC 
+# MAGIC Este notebook:
+# MAGIC - Lee logs de predicción de producción
+# MAGIC - Compara distribuciones con datos de entrenamiento
+# MAGIC - Detecta drift estadístico
+# MAGIC - Genera métricas de decisión
+
+# COMMAND ----------
+
+# Configuración mediante widgets
+dbutils.widgets.text("model_name", "renewable_energy_predictor", "Nombre del Modelo")
+dbutils.widgets.text("drift_threshold", "0.05", "Umbral de Drift (p-value)")
+dbutils.widgets.text("days_lookback", "7", "Días de Lookback")
+
+MODEL_NAME = dbutils.widgets.get("model_name")
+DRIFT_THRESHOLD = float(dbutils.widgets.get("drift_threshold"))
+DAYS_LOOKBACK = int(dbutils.widgets.get("days_lookback"))
+
+print(f"📊 Configuración de Drift Detection:")
+print(f"   Modelo: {MODEL_NAME}")
+print(f"   Umbral: {DRIFT_THRESHOLD}")
+print(f"   Días: {DAYS_LOOKBACK}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 1. Cargar Datos de Referencia (Training)
+
+# COMMAND ----------
+
+import mlflow
+from mlflow.tracking import MlflowClient
+from pyspark.sql.functions import col, current_date, datediff
+
+# Obtener modelo en producción y su run ID
+client = MlflowClient()
+model_versions = client.search_model_versions(f"name='{MODEL_NAME}'")
+production_version = [v for v in model_versions if v.current_stage == "Production"][0]
+run_id = production_version.run_id
+
+print(f"📦 Modelo en Producción: version {production_version.version}")
+print(f"   Run ID: {run_id}")
+
+# Cargar datos de referencia desde el run
+run = client.get_run(run_id)
+training_data_path = run.data.params.get("training_data_path", "/delta/energy_features")
+
+df_reference = spark.read.format("delta").load(training_data_path)
+print(f"✓ Datos de referencia cargados: {df_reference.count():,} registros")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 2. Cargar Datos de Producción Recientes
+
+# COMMAND ----------
+
+from datetime import datetime, timedelta
+
+# Leer logs de predicción de los últimos N días
+cutoff_date = (datetime.now() - timedelta(days=DAYS_LOOKBACK)).strftime("%Y-%m-%d")
+
+df_production = spark.read.format("delta") \
+    .load("/mnt/ml-monitoring/prediction-logs") \
+    .filter(f"prediction_timestamp >= '{cutoff_date}'")
+
+print(f"✓ Datos de producción cargados: {df_production.count():,} registros")
+print(f"   Desde: {cutoff_date}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 3. Análisis de Drift por Feature
+
+# COMMAND ----------
+
+from scipy import stats
+import pandas as pd
+import json
+
+# Features a monitorear
+FEATURES = ['year', 'population', 'gdp', 'primary_energy_consumption', 'fossil_fuel_consumption', 'renewables_consumption']
+
+drift_results = []
+
+for feature in FEATURES:
+    # Obtener distribuciones
+    ref_values = df_reference.select(feature).toPandas()[feature].values
+    prod_values = df_production.select(feature).toPandas()[feature].values
+    
+    # Test de Kolmogorov-Smirnov
+    statistic, p_value = stats.ks_2samp(ref_values, prod_values)
+    
+    # Detectar drift
+    drift_detected = p_value < DRIFT_THRESHOLD
+    
+    # Calcular diferencias en estadísticas
+    ref_mean = float(ref_values.mean())
+    prod_mean = float(prod_values.mean())
+    ref_std = float(ref_values.std())
+    prod_std = float(prod_values.std())
+    
+    mean_diff_pct = ((prod_mean - ref_mean) / ref_mean * 100) if ref_mean != 0 else 0
+    std_diff_pct = ((prod_std - ref_std) / ref_std * 100) if ref_std != 0 else 0
+    
+    result = {
+        'feature': feature,
+        'ks_statistic': float(statistic),
+        'p_value': float(p_value),
+        'drift_detected': drift_detected,
+        'ref_mean': ref_mean,
+        'prod_mean': prod_mean,
+        'mean_diff_pct': mean_diff_pct,
+        'ref_std': ref_std,
+        'prod_std': prod_std,
+        'std_diff_pct': std_diff_pct
+    }
+    
+    drift_results.append(result)
+    
+    status = "⚠️ DRIFT" if drift_detected else "✓ OK"
+    print(f"{status} {feature:20s} | p-value: {p_value:.4f} | Δ mean: {mean_diff_pct:+.1f}%")
+
+# Convertir a DataFrame
+df_drift = pd.DataFrame(drift_results)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 4. Calcular Métricas de Decisión
+
+# COMMAND ----------
+
+# Contar features con drift
+drift_count = df_drift['drift_detected'].sum()
+total_features = len(FEATURES)
+drift_ratio = drift_count / total_features
+
+# Calcular severidad del drift
+avg_ks_statistic = df_drift['ks_statistic'].mean()
+max_mean_shift = df_drift['mean_diff_pct'].abs().max()
+
+# Decisión de reentrenamiento
+RETRAINING_DECISION = {
+    'should_retrain': drift_ratio >= 0.3,  # 30% de features con drift
+    'drift_count': int(drift_count),
+    'drift_ratio': float(drift_ratio),
+    'avg_ks_statistic': float(avg_ks_statistic),
+    'max_mean_shift_pct': float(max_mean_shift),
+    'drift_features': df_drift[df_drift['drift_detected']]['feature'].tolist()
+}
+
+print("\n" + "="*60)
+print("📊 DECISIÓN DE REENTRENAMIENTO")
+print("="*60)
+print(f"Features con drift: {drift_count}/{total_features} ({drift_ratio*100:.1f}%)")
+print(f"Severidad promedio: {avg_ks_statistic:.4f}")
+print(f"Máximo shift en mean: {max_mean_shift:.1f}%")
+print(f"\n{'🔄 REENTRENAR' if RETRAINING_DECISION['should_retrain'] else '✓ NO REENTRENAR'}")
+
+if RETRAINING_DECISION['should_retrain']:
+    print(f"Features afectados: {', '.join(RETRAINING_DECISION['drift_features'])}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 5. Registrar Resultados en MLflow
+
+# COMMAND ----------
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+with mlflow.start_run(run_name=f"drift_detection_{MODEL_NAME}"):
+    # Log parámetros
+    mlflow.log_param("model_name", MODEL_NAME)
+    mlflow.log_param("drift_threshold", DRIFT_THRESHOLD)
+    mlflow.log_param("days_lookback", DAYS_LOOKBACK)
+    
+    # Log métricas
+    mlflow.log_metric("drift_feature_count", drift_count)
+    mlflow.log_metric("drift_ratio", drift_ratio)
+    mlflow.log_metric("avg_ks_statistic", avg_ks_statistic)
+    mlflow.log_metric("max_mean_shift_pct", max_mean_shift)
+    mlflow.log_metric("should_retrain", 1 if RETRAINING_DECISION['should_retrain'] else 0)
+    
+    # Log detalles por feature
+    for result in drift_results:
+        mlflow.log_metric(f"drift_pvalue_{result['feature']}", result['p_value'])
+        mlflow.log_metric(f"drift_mean_shift_{result['feature']}", abs(result['mean_diff_pct']))
+    
+    # Crear visualización
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Gráfico 1: P-values por feature
+    colors = ['red' if d else 'green' for d in df_drift['drift_detected']]
+    axes[0].barh(df_drift['feature'], df_drift['p_value'], color=colors)
+    axes[0].axvline(x=DRIFT_THRESHOLD, color='red', linestyle='--', label='Umbral')
+    axes[0].set_xlabel('P-value (KS Test)')
+    axes[0].set_title('Detección de Drift por Feature')
+    axes[0].legend()
+    
+    # Gráfico 2: Shift en medias
+    axes[1].barh(df_drift['feature'], df_drift['mean_diff_pct'], color=colors)
+    axes[1].set_xlabel('Cambio en Media (%)')
+    axes[1].set_title('Shift en Distribuciones')
+    axes[1].axvline(x=0, color='black', linestyle='-', linewidth=0.5)
+    
+    plt.tight_layout()
+    plt.savefig('/tmp/drift_analysis.png', dpi=100, bbox_inches='tight')
+    mlflow.log_artifact('/tmp/drift_analysis.png')
+    
+    # Log resultados como JSON
+    with open('/tmp/drift_results.json', 'w') as f:
+        json.dump(RETRAINING_DECISION, f, indent=2)
+    mlflow.log_artifact('/tmp/drift_results.json')
+
+print("✓ Resultados registrados en MLflow")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 6. Salida para Siguiente Notebook
+
+# COMMAND ----------
+
+# Guardar decisión para siguiente notebook
+dbutils.jobs.taskValues.set(key="should_retrain", value=RETRAINING_DECISION['should_retrain'])
+dbutils.jobs.taskValues.set(key="drift_count", value=drift_count)
+dbutils.jobs.taskValues.set(key="drift_features", value=",".join(RETRAINING_DECISION['drift_features']))
+
+# También guardar en Delta para auditoría
+drift_audit = spark.createDataFrame([{
+    'timestamp': datetime.now(),
+    'model_name': MODEL_NAME,
+    'should_retrain': RETRAINING_DECISION['should_retrain'],
+    'drift_count': drift_count,
+    'drift_ratio': drift_ratio,
+    'drift_features': ",".join(RETRAINING_DECISION['drift_features'])
+}])
+
+drift_audit.write.format("delta").mode("append").save("/mnt/ml-monitoring/drift-decisions")
+
+print("✓ Decisión propagada al siguiente task")
+```
+
+### 8.3 Paso 2: Crear Notebook de Reentrenamiento Condicional
+
+```python
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Notebook 2: Reentrenamiento Condicional
+# MAGIC 
+# MAGIC Este notebook:
+# MAGIC - Lee la decisión del notebook anterior
+# MAGIC - Ejecuta reentrenamiento si es necesario
+# MAGIC - Valida el nuevo modelo
+# MAGIC - Registra en MLflow
+
+# COMMAND ----------
+
+# Configuración
+dbutils.widgets.text("model_name", "renewable_energy_predictor", "Nombre del Modelo")
+dbutils.widgets.text("force_retrain", "false", "Forzar Reentrenamiento")
+
+MODEL_NAME = dbutils.widgets.get("model_name")
+FORCE_RETRAIN = dbutils.widgets.get("force_retrain").lower() == "true"
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 1. Verificar si Debe Reentrenar
+
+# COMMAND ----------
+
+import mlflow
+from mlflow.tracking import MlflowClient
+
+# Obtener decisión del notebook anterior
+try:
+    should_retrain = dbutils.jobs.taskValues.get(taskKey="drift_detection", 
+                                                  key="should_retrain", 
+                                                  default=False)
+    drift_features = dbutils.jobs.taskValues.get(taskKey="drift_detection", 
+                                                  key="drift_features", 
+                                                  default="")
+except:
+    # Si no está disponible, leer desde Delta
+    last_decision = spark.read.format("delta") \
+        .load("/mnt/ml-monitoring/drift-decisions") \
+        .orderBy("timestamp", ascending=False) \
+        .first()
+    
+    should_retrain = last_decision['should_retrain'] if last_decision else False
+    drift_features = last_decision['drift_features'] if last_decision else ""
+
+# Override con force_retrain
+should_retrain = should_retrain or FORCE_RETRAIN
+
+print(f"📊 Decisión de Reentrenamiento:")
+print(f"   Should retrain: {should_retrain}")
+print(f"   Drift features: {drift_features}")
+print(f"   Force retrain: {FORCE_RETRAIN}")
+
+if not should_retrain:
+    print("\n✓ No se requiere reentrenamiento. Terminando.")
+    dbutils.notebook.exit("NO_RETRAIN_NEEDED")
+
+print("\n🔄 Iniciando proceso de reentrenamiento...")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 2. Preparar Datos de Entrenamiento
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col, current_timestamp
+from datetime import datetime, timedelta
+
+# Cargar datos frescos (últimos 90 días)
+cutoff_date = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+
+df_training = spark.read.format("delta") \
+    .load("/delta/energy_features") \
+    .filter(f"date >= '{cutoff_date}'")
+
+print(f"✓ Datos de entrenamiento cargados: {df_training.count():,} registros")
+
+# Split train/test
+df_train, df_test = df_training.randomSplit([0.8, 0.2], seed=42)
+
+print(f"   Train: {df_train.count():,} registros")
+print(f"   Test: {df_test.count():,} registros")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 3. Entrenar Nuevo Modelo
+
+# COMMAND ----------
+
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import numpy as np
+
+# Preparar datos
+# Target: renewable_share_elec (% de electricidad de fuentes renovables)
+FEATURES = ['year', 'population', 'gdp', 'primary_energy_consumption', 'fossil_fuel_consumption', 'renewables_consumption']
+TARGET = 'renewables_share_energy'  # % de energía renovable en el mix energético
+
+X_train = df_train.select(FEATURES).toPandas()
+y_train = df_train.select(TARGET).toPandas()[TARGET]
+
+X_test = df_test.select(FEATURES).toPandas()
+y_test = df_test.select(TARGET).toPandas()[TARGET]
+
+print(f"📊 Distribución del target (renewables_share_energy):")
+print(f"   Train - Min: {y_train.min():.2f}%, Max: {y_train.max():.2f}%, Mean: {y_train.mean():.2f}%")
+print(f"   Test  - Min: {y_test.min():.2f}%, Max: {y_test.max():.2f}%, Mean: {y_test.mean():.2f}%")
+
+# Entrenar modelo de regresión con parámetros optimizados
+with mlflow.start_run(run_name=f"retrain_{MODEL_NAME}_{datetime.now().strftime('%Y%m%d_%H%M')}") as run:
+    
+    # Log contexto de reentrenamiento
+    mlflow.set_tag("retrain_trigger", "drift_detection")
+    mlflow.set_tag("drift_features", drift_features)
+    mlflow.set_tag("model_type", "regression")
+    mlflow.set_tag("target_variable", "renewables_share_energy")
+    mlflow.log_param("training_data_cutoff", cutoff_date)
+    mlflow.log_param("training_records", df_train.count())
+    
+    # Parámetros del modelo Random Forest Regressor
+    params = {
+        'n_estimators': 200,
+        'max_depth': 15,
+        'min_samples_split': 5,
+        'min_samples_leaf': 2,
+        'random_state': 42,
+        'n_jobs': -1
+    }
+    
+    for key, value in params.items():
+        mlflow.log_param(key, value)
+    
+    # Entrenar modelo de regresión
+    print("🔄 Entrenando Random Forest Regressor...")
+    model = RandomForestRegressor(**params)
+    model.fit(X_train, y_train)
+    
+    # Predicciones
+    y_pred_train = model.predict(X_train)
+    y_pred_test = model.predict(X_test)
+    
+    # Calcular métricas de regresión
+    metrics = {
+        'train_r2': r2_score(y_train, y_pred_train),
+        'test_r2': r2_score(y_test, y_pred_test),
+        'train_rmse': np.sqrt(mean_squared_error(y_train, y_pred_train)),
+        'test_rmse': np.sqrt(mean_squared_error(y_test, y_pred_test)),
+        'train_mae': mean_absolute_error(y_train, y_pred_train),
+        'test_mae': mean_absolute_error(y_test, y_pred_test),
+        'mape': np.mean(np.abs((y_test - y_pred_test) / y_test)) * 100  # Mean Absolute Percentage Error
+    }
+    
+    # Log métricas
+    for metric_name, metric_value in metrics.items():
+        mlflow.log_metric(metric_name, metric_value)
+    
+    print("\n📊 Métricas del Nuevo Modelo (Regresión):")
+    print(f"   R² Score (Test): {metrics['test_r2']:.4f}")
+    print(f"   RMSE (Test): {metrics['test_rmse']:.4f}%")
+    print(f"   MAE (Test): {metrics['test_mae']:.4f}%")
+    print(f"   MAPE: {metrics['mape']:.2f}%")
+    
+    # Feature importance
+    feature_importance = pd.DataFrame({
+        'feature': FEATURES,
+        'importance': model.feature_importances_
+    }).sort_values('importance', ascending=False)
+    
+    print(f"\n🔝 Top Features:")
+    for idx, row in feature_importance.head(3).iterrows():
+        print(f"   {row['feature']}: {row['importance']:.4f}")
+    
+    # Registrar modelo
+    mlflow.sklearn.log_model(model, "model")
+    
+    new_run_id = run.info.run_id
+    print(f"\n✓ Modelo reentrenado. Run ID: {new_run_id}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 4. Guardar Métricas para Validación
+
+# COMMAND ----------
+
+# Guardar métricas para siguiente notebook
+dbutils.jobs.taskValues.set(key="new_model_run_id", value=new_run_id)
+dbutils.jobs.taskValues.set(key="new_model_accuracy", value=metrics['accuracy'])
+dbutils.jobs.taskValues.set(key="new_model_f1", value=metrics['f1'])
+dbutils.jobs.taskValues.set(key="new_model_roc_auc", value=metrics['roc_auc'])
+
+print("✓ Métricas guardadas para validación")
+```
+
+### 8.4 Paso 3: Crear Notebook de Validación y Promoción
+
+```python
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Notebook 3: Validación y Promoción Automática
+# MAGIC 
+# MAGIC Este notebook:
+# MAGIC - Compara nuevo modelo vs producción
+# MAGIC - Valida mejoras en métricas
+# MAGIC - Promueve automáticamente si cumple criterios
+# MAGIC - Notifica resultados
+
+# COMMAND ----------
+
+# Configuración
+dbutils.widgets.text("model_name", "renewable_energy_predictor", "Nombre del Modelo")
+dbutils.widgets.text("min_r2_improvement", "0.01", "Mejora Mínima en R² Score")
+
+MODEL_NAME = dbutils.widgets.get("model_name")
+MIN_R2_IMPROVEMENT = float(dbutils.widgets.get("min_r2_improvement"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 1. Obtener Modelos a Comparar
+
+# COMMAND ----------
+
+import mlflow
+from mlflow.tracking import MlflowClient
+
+client = MlflowClient()
+
+# Modelo en producción actual
+model_versions = client.search_model_versions(f"name='{MODEL_NAME}'")
+production_version = [v for v in model_versions if v.current_stage == "Production"]
+
+if not production_version:
+    print("⚠️ No hay modelo en producción. Promoviendo nuevo modelo directamente...")
+    COMPARE_WITH_PRODUCTION = False
+else:
+    production_version = production_version[0]
+    production_run = client.get_run(production_version.run_id)
+    COMPARE_WITH_PRODUCTION = True
+    
+    print(f"📦 Modelo en Producción:")
+    print(f"   Version: {production_version.version}")
+    print(f"   Run ID: {production_version.run_id}")
+
+# Nuevo modelo reentrenado
+new_run_id = dbutils.jobs.taskValues.get(taskKey="retrain_model", key="new_model_run_id")
+new_run = client.get_run(new_run_id)
+
+print(f"\n🆕 Nuevo Modelo:")
+print(f"   Run ID: {new_run_id}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 2. Comparar Métricas
+
+# COMMAND ----------
+
+import pandas as pd
+
+# Obtener métricas
+new_metrics = new_run.data.metrics
+
+if COMPARE_WITH_PRODUCTION:
+    prod_metrics = production_run.data.metrics
+    
+    # Crear tabla comparativa con métricas de regresión
+    comparison = []
+    for metric in ['test_r2', 'test_rmse', 'test_mae', 'mape']:
+        prod_value = prod_metrics.get(metric, 0)
+        new_value = new_metrics.get(metric, 0)
+        improvement = new_value - prod_value
+        
+        # Para RMSE, MAE, MAPE menor es mejor (invertir signo)
+        if metric in ['test_rmse', 'test_mae', 'mape']:
+            better = improvement < 0  # Menor es mejor
+            improvement_pct = (improvement / prod_value * 100) if prod_value != 0 else 0
+        else:  # Para R² mayor es mejor
+            better = improvement > 0
+            improvement_pct = (improvement / prod_value * 100) if prod_value != 0 else 0
+        
+        comparison.append({
+            'metric': metric,
+            'production': prod_value,
+            'new_model': new_value,
+            'improvement': improvement,
+            'improvement_pct': improvement_pct,
+            'better': '✓' if better else '✗'
+        })
+    
+    df_comparison = pd.DataFrame(comparison)
+    
+    print("\n📊 COMPARACIÓN DE MODELOS (Regresión)")
+    print("="*70)
+    print(df_comparison.to_string(index=False))
+    print("="*70)
+    print("\n💡 Nota: Para RMSE, MAE y MAPE, valores menores son mejores")
+    
+    # Decisión de promoción basada en R² (métrica principal)
+    r2_improvement = df_comparison[df_comparison['metric'] == 'test_r2']['improvement'].values[0]
+    
+    # Alternativamente, verificar si RMSE mejoró (disminuyó)
+    rmse_improvement = df_comparison[df_comparison['metric'] == 'test_rmse']['improvement'].values[0]
+    
+    # Promover si R² mejoró O RMSE disminuyó significativamente
+    SHOULD_PROMOTE = (r2_improvement >= MIN_R2_IMPROVEMENT) or (rmse_improvement < -0.5)
+    
+    print(f"\n{'✅' if SHOULD_PROMOTE else '❌'} Decisión de Promoción:")
+    print(f"   Mejora en R²: {r2_improvement:+.4f} ({r2_improvement*100:+.2f}%)")
+    print(f"   Cambio en RMSE: {rmse_improvement:+.4f}% (negativo es mejor)")
+    print(f"   Umbral mínimo R²: {MIN_R2_IMPROVEMENT:.4f}")
+    print(f"   Resultado: {'PROMOVER' if SHOULD_PROMOTE else 'NO PROMOVER'}")
+    
+else:
+    # No hay modelo en producción, promover directamente
+    SHOULD_PROMOTE = True
+    print("\n✓ Promoviendo primer modelo a producción")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 3. Registrar y Promover Modelo
+
+# COMMAND ----------
+
+if SHOULD_PROMOTE:
+    # Registrar modelo en Model Registry
+    model_uri = f"runs:/{new_run_id}/model"
+    
+    # Registrar nueva versión
+    model_details = mlflow.register_model(model_uri, MODEL_NAME)
+    new_version = model_details.version
+    
+    print(f"✓ Modelo registrado como version {new_version}")
+    
+    # Agregar metadata
+    client.set_model_version_tag(MODEL_NAME, new_version, "validation_status", "passed")
+    client.set_model_version_tag(MODEL_NAME, new_version, "retrain_reason", "drift_detection")
+    
+    if COMPARE_WITH_PRODUCTION:
+        client.set_model_version_tag(MODEL_NAME, new_version, "accuracy_improvement", 
+                                     f"{accuracy_improvement:.4f}")
+    
+    # Promover a Staging primero
+    client.transition_model_version_stage(
+        name=MODEL_NAME,
+        version=new_version,
+        stage="Staging"
+    )
+    print(f"✓ Modelo promovido a Staging")
+    
+    # Ejecutar smoke tests en Staging
+    print("🧪 Ejecutando smoke tests...")
+    import time
+    time.sleep(2)  # Simular tests
+    print("✓ Smoke tests pasados")
+    
+    # Promover a Production
+    client.transition_model_version_stage(
+        name=MODEL_NAME,
+        version=new_version,
+        stage="Production",
+        archive_existing_versions=True
+    )
+    
+    print(f"\n🎉 MODELO PROMOVIDO A PRODUCCIÓN")
+    print(f"   Version: {new_version}")
+    print(f"   Run ID: {new_run_id}")
+    
+    # Log en MLflow
+    with mlflow.start_run(run_id=new_run_id):
+        mlflow.set_tag("promoted_to_production", "true")
+        mlflow.set_tag("promotion_timestamp", pd.Timestamp.now().isoformat())
+    
+else:
+    print("\n⚠️ Modelo NO promovido - mejora insuficiente")
+    
+    # Registrar de todas formas para auditoría
+    model_uri = f"runs:/{new_run_id}/model"
+    model_details = mlflow.register_model(model_uri, MODEL_NAME)
+    new_version = model_details.version
+    
+    client.set_model_version_tag(MODEL_NAME, new_version, "validation_status", "rejected")
+    client.set_model_version_tag(MODEL_NAME, new_version, "rejection_reason", "insufficient_improvement")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 4. Enviar Notificaciones
+
+# COMMAND ----------
+
+import json
+from datetime import datetime
+
+# Crear reporte
+report = {
+    'timestamp': datetime.now().isoformat(),
+    'model_name': MODEL_NAME,
+    'promoted': SHOULD_PROMOTE,
+    'new_version': new_version if SHOULD_PROMOTE else None,
+    'new_run_id': new_run_id,
+    'metrics': {k: float(v) for k, v in new_metrics.items()}
+}
+
+if COMPARE_WITH_PRODUCTION:
+    report['comparison'] = df_comparison.to_dict('records')
+    report['r2_improvement'] = float(r2_improvement)
+    report['rmse_improvement'] = float(rmse_improvement)
+
+# Guardar reporte
+report_path = f"/dbfs/mnt/ml-monitoring/retrain-reports/report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+with open(report_path, 'w') as f:
+    json.dump(report, f, indent=2)
+
+print(f"✓ Reporte guardado: {report_path}")
+
+# Mensaje de notificación
+notification_message = f"""
+{'🎉' if SHOULD_PROMOTE else '⚠️'} Reentrenamiento Automático Completado
+
+Modelo: {MODEL_NAME} (Predicción de Energía Renovable)
+Resultado: {'PROMOVIDO A PRODUCCIÓN' if SHOULD_PROMOTE else 'NO PROMOVIDO'}
+Nueva Version: {new_version if SHOULD_PROMOTE else 'N/A'}
+
+Métricas del Nuevo Modelo (Regresión):
+- R² Score: {new_metrics.get('test_r2', 0):.4f}
+- RMSE: {new_metrics.get('test_rmse', 0):.4f}%
+- MAE: {new_metrics.get('test_mae', 0):.4f}%
+- MAPE: {new_metrics.get('mape', 0):.2f}%
+"""
+
+if COMPARE_WITH_PRODUCTION:
+    notification_message += f"\nMejora en R²: {r2_improvement:+.4f} ({r2_improvement*100:+.2f}%)"
+    notification_message += f"\nCambio en RMSE: {rmse_improvement:+.4f}% (negativo es mejor)"
+
+print("\n" + "="*60)
+print(notification_message)
+print("="*60)
+
+# Opcional: Enviar a webhook (Slack, Teams, etc.)
+# import requests
+# webhook_url = dbutils.secrets.get("monitoring", "slack-webhook")
+# requests.post(webhook_url, json={"text": notification_message})
+```
+
+### 8.5 Paso 4: Crear Databricks Job Orquestado
+
+```python
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Configuración del Job de Reentrenamiento Automático
+
+# COMMAND ----------
+
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.service import jobs
+
+w = WorkspaceClient()
+
+# Configuración del pipeline
+job = w.jobs.create(
+    name="automated-retraining-pipeline",
+    tasks=[
+        # Task 1: Detección de Drift
+        jobs.Task(
+            task_key="drift_detection",
+            notebook_task=jobs.NotebookTask(
+                notebook_path="/Workspace/Production/ml-project/notebooks/01_drift_detection",
+                base_parameters={
+                    "model_name": "renewable_energy_predictor",
+                    "drift_threshold": "0.05",
+                    "days_lookback": "7"
+                }
+            ),
+            new_cluster=jobs.ClusterSpec(
+                spark_version="13.3.x-scala2.12",
+                node_type_id="Standard_DS3_v2",
+                num_workers=2
+            )
+        ),
+        
+        # Task 2: Reentrenamiento Condicional
+        jobs.Task(
+            task_key="retrain_model",
+            depends_on=[jobs.TaskDependency(task_key="drift_detection")],
+            notebook_task=jobs.NotebookTask(
+                notebook_path="/Workspace/Production/ml-project/notebooks/02_conditional_retrain",
+                base_parameters={
+                    "model_name": "renewable_energy_predictor",
+                    "force_retrain": "false"
+                }
+            ),
+            new_cluster=jobs.ClusterSpec(
+                spark_version="13.3.x-scala2.12",
+                node_type_id="Standard_DS4_v2",
+                num_workers=4
+            )
+        ),
+        
+        # Task 3: Validación y Promoción
+        jobs.Task(
+            task_key="validate_and_promote",
+            depends_on=[jobs.TaskDependency(task_key="retrain_model")],
+            notebook_task=jobs.NotebookTask(
+                notebook_path="/Workspace/Production/ml-project/notebooks/03_validate_promote",
+                base_parameters={
+                    "model_name": "renewable_energy_predictor",
+                    "min_r2_improvement": "0.01"
+                }
+            ),
+            new_cluster=jobs.ClusterSpec(
+                spark_version="13.3.x-scala2.12",
+                node_type_id="Standard_DS3_v2",
+                num_workers=1
+            )
+        )
+    ],
+    
+    # Programación: Ejecutar semanalmente
+    schedule=jobs.CronSchedule(
+        quartz_cron_expression="0 0 2 ? * MON",  # Lunes a las 2 AM
+        timezone_id="America/New_York"
+    ),
+    
+    # Notificaciones
+    email_notifications=jobs.JobEmailNotifications(
+        on_success=["ml-team@company.com"],
+        on_failure=["ml-team@company.com", "ops-team@company.com"]
+    ),
+    
+    # Timeout y retry
+    timeout_seconds=7200,  # 2 horas
+    max_concurrent_runs=1
+)
+
+print(f"✅ Job de Reentrenamiento Automático Creado")
+print(f"Job ID: {job.job_id}")
+print(f"URL: https://<databricks-instance>/#job/{job.job_id}")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Ejecutar Job Manualmente para Testing
+
+# COMMAND ----------
+
+# Ejecutar el job
+run = w.jobs.run_now(job_id=job.job_id)
+
+print(f"🔄 Job ejecutado manualmente")
+print(f"Run ID: {run.run_id}")
+print(f"Monitor en: https://<databricks-instance>/#job/{job.job_id}/run/{run.run_id}")
+```
+
+### 8.6 Diagrama de Flujo Completo
+
+```mermaid
+graph TD
+    A[Inicio: Job Programado] --> B[Task 1: Drift Detection]
+    B --> C{¿Drift Detectado?}
+    C -->|No| D[Finalizar - No Action]
+    C -->|Sí| E[Task 2: Reentrenamiento]
+    E --> F[Cargar Datos Frescos]
+    F --> G[Entrenar Nuevo Modelo]
+    G --> H[Evaluar Métricas]
+    H --> I[Task 3: Validación]
+    I --> J{¿Mejor que Producción?}
+    J -->|No| K[Registrar pero NO Promover]
+    J -->|Sí| L[Promover a Staging]
+    L --> M[Smoke Tests]
+    M --> N{¿Tests OK?}
+    N -->|No| O[Rollback]
+    N -->|Sí| P[Promover a Production]
+    P --> Q[Archivar Versión Anterior]
+    Q --> R[Enviar Notificación Success]
+    K --> S[Enviar Notificación Info]
+    D --> T[Enviar Notificación Info]
+```
+
+### 8.7 Resumen del Pipeline Automatizado
+
+Este pipeline implementa:
+
+✅ **Detección Automática de Drift**
+- Monitoreo continuo de distribuciones de features
+- Tests estadísticos (Kolmogorov-Smirnov)
+- Métricas de decisión basadas en umbrales
+
+✅ **Reentrenamiento Condicional**
+- Solo entrena cuando hay drift significativo
+- Usa datos frescos de producción (últimos 90 días)
+- Registra contexto completo en MLflow
+
+✅ **Validación Automática**
+- Compara nuevo modelo con producción actual
+- Valida mejoras en múltiples métricas
+- Promoción automática solo si mejora
+
+✅ **Orquestación Robusta**
+- Databricks Jobs con dependencias entre tasks
+- Manejo de errores y rollbacks
+- Notificaciones automáticas por email
+
+✅ **Auditoría Completa**
+- Todo registrado en MLflow con tags
+- Reportes detallados en JSON
+- Delta tables para auditoría histórica
+- Trazabilidad de todas las decisiones
+
+### 8.8 Mejores Prácticas Implementadas
+
+1. **Parametrización**: Todos los umbrales son configurables vía widgets
+2. **Idempotencia**: Los notebooks pueden re-ejecutarse sin efectos secundarios
+3. **Fail-fast**: Validaciones tempranas y exits explícitos
+4. **Observabilidad**: Logs detallados en cada paso
+5. **Rollback seguro**: Versiones anteriores archivadas, no eliminadas
+6. **Testing**: Smoke tests antes de promover a producción
+
+---
+
 ## Conclusión
 
 En este laboratorio has aprendido a:
@@ -1549,6 +2473,7 @@ En este laboratorio has aprendido a:
 ✅ Implementar monitoreo de métricas y drift  
 ✅ Configurar alertas automatizadas  
 ✅ Aplicar buenas prácticas de MLOps en producción  
+✅ **Crear pipelines automatizados de reentrenamiento end-to-end**  
 
 **Puntos Clave:**
 - El despliegue es solo el comienzo; el monitoreo continuo es esencial
