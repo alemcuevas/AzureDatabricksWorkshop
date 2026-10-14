@@ -1,0 +1,6 @@
+name: azure-databricks-workshop
+metadata:
+  template: azure-databricks-workshop@0.1.0
+infra:
+  provider: bicep
+  path: infra
